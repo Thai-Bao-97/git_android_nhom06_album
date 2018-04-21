@@ -3,7 +3,9 @@ package com.example.thaib.testtab.album;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.database.Cursor;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -15,6 +17,9 @@ import com.example.thaib.testtab.dialog.ConfirmDialog;
 import com.example.thaib.testtab.dialog.InputDialog;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 /**
@@ -35,14 +40,58 @@ public class AlbumController {
 
     }
 
-    public static LinkedList<Album> getAlbums(){
-        LinkedList<Album> albums = new LinkedList<>();
-        File[] folders = albumsLocation.listFiles(new FolderFileFilter());
-        for (File folder : folders){
-            albums.add(new Album(folder));
+    public static LinkedList<Album> getImageAlbums(Context context) {
+        // The list of columns we're interested in:
+        String[] columns = {MediaStore.Images.Media.DATA,
+                MediaStore.Images.Media.BUCKET_DISPLAY_NAME};
+
+        final Cursor cursor = context.getContentResolver().
+                query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, // Specify the provider
+                        columns, // The columns we're interested in
+                        null, // A WHERE-filter query
+                        null, // The arguments for the filter-query
+                        MediaStore.Images.Media.DATE_TAKEN + " DESC" // Order the results, newest first
+                );
+
+        HashMap<String, LinkedList<File>> map = new HashMap<>();
+
+
+        if (cursor.moveToFirst()) {
+            final int bucket_name_col = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.BUCKET_DISPLAY_NAME);
+            final int image_path_col = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            do {
+                String name = cursor.getString(bucket_name_col).toUpperCase();
+                File file = new File(cursor.getString(image_path_col));
+
+                try {
+                    file = file.getCanonicalFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                if(!file.exists())
+                    continue;
+                if (map.containsKey(name)) {
+                    map.get(name).add(file);
+                } else {
+                    LinkedList<File> files = new LinkedList<>();
+                    files.add(file);
+                    map.put(name, files);
+                }
+            } while (cursor.moveToNext());
         }
+        LinkedList<Album> albums = new LinkedList<>();
+        Iterator<String> it = map.keySet().iterator();
+        while (it.hasNext()) {
+            String name = it.next();
+            LinkedList<File> imgs = map.get(name);
+            Album album = new Album(imgs.get(0).getParentFile());
+            album.setImages(imgs);
+            albums.add(album);
+        }
+        cursor.close();
         return albums;
     }
+
 
     public void addNewAblbum(){
         InputDialog inputDialog=new InputDialog(context,"Nhập tên album mới",
@@ -159,5 +208,10 @@ public class AlbumController {
         };
         listView.setAdapter(albumAdapter_);
         dialog.show();
+    }
+
+    public void sortAlbums(SortType sortType){
+        albumAdapter.sortAlbum(sortType);
+
     }
 }

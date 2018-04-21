@@ -1,18 +1,21 @@
 package com.example.thaib.testtab.album;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.example.thaib.testtab.MainActivity;
 import com.example.thaib.testtab.R;
 
 import java.util.LinkedList;
@@ -36,12 +39,39 @@ public class AlbumFragment extends Fragment {
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.albumSortAZ:
+                albumController.sortAlbums(SortType.NAME_A_Z);
+                break;
+            case R.id.albumSortZA:
+                albumController.sortAlbums(SortType.NAME_Z_A);
+                break;
+            case R.id.albumSortItemD:
+                albumController.sortAlbums(SortType.ITEMS_DESC);
+                break;
+            case R.id.albumSortItemI:
+                albumController.sortAlbums(SortType.ITEMS_INC);
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.album_fragment, container, false);
 
+        MainActivity mainActivity = (MainActivity)context;
+
         listAlbum = rootView.findViewById(R.id.listAlbum);
-        LinkedList<Album> albums = AlbumController.getAlbums();
+        LinkedList<Album> albums = AlbumController.getImageAlbums(context);
         AlbumAdapter albumAdapter = new AlbumAdapter(context, albums);
         listAlbum.setAdapter(albumAdapter);
 
@@ -60,9 +90,17 @@ public class AlbumFragment extends Fragment {
             }
         });
 
+
+
         registerForContextMenu(listAlbum);
 
         return rootView;
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.option_menu_album,menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -76,7 +114,6 @@ public class AlbumFragment extends Fragment {
             getActivity().getMenuInflater().inflate(R.menu.menu_album, menu);
         }
     }
-
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {

@@ -14,12 +14,10 @@ public class Album {
     private File file;
     private LinkedList<File> images;
     private static FileFilter imageFilter = new ImageFileFilter();
-    private File lastestImage;
 
     public Album(File file) {
         this.file = file;
-        lastestImage=null;
-        loadImagesFile();
+        images=new LinkedList<>();
     }
 
     public File getFile() {
@@ -39,12 +37,6 @@ public class Album {
         images = new LinkedList<>();
         if(file != null && file.exists()){
             File[] files = file.listFiles(imageFilter);
-            for (File img:files) {
-                if(lastestImage == null || lastestImage.lastModified() < img.lastModified()){
-                    lastestImage=img;
-                }
-                images.add(img);
-            }
         }
     }
 
@@ -67,18 +59,20 @@ public class Album {
     }
 
     public File getLastestImage() {
-        return lastestImage;
+        if(images.size() > 0)
+            return images.get(0);
+        return null;
     }
 
     public void addImage(File img){
-        if(lastestImage == null || lastestImage.lastModified() < img.lastModified()){
-            lastestImage=img;
-        }
         images.add(img);
     }
 
     public void clearAlbum(){
-        lastestImage=null;
         this.images.clear();
+    }
+
+    public void setImages(LinkedList<File> images) {
+        this.images = images;
     }
 }

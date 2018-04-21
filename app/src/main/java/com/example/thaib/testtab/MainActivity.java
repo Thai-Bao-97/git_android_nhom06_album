@@ -1,7 +1,15 @@
 package com.example.thaib.testtab;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.database.Cursor;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.provider.BaseColumns;
+import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -13,6 +21,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,7 +30,19 @@ import android.view.ViewGroup;
 
 import android.widget.TextView;
 
+import com.example.thaib.testtab.album.Album;
 import com.example.thaib.testtab.album.AlbumFragment;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -47,11 +68,12 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         Drawable drawable = toolbar.getOverflowIcon();
-        if(drawable != null) {
+        if (drawable != null) {
             drawable = DrawableCompat.wrap(drawable);
             DrawableCompat.setTint(drawable.mutate(), getResources().getColor(R.color.black));
             toolbar.setOverflowIcon(drawable);
         }
+        toolbar.setTitleTextColor(Color.rgb(0,0,0));
         setSupportActionBar(toolbar);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -65,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
 
         mViewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(mViewPager));
-
 
     }
 
@@ -102,6 +123,7 @@ public class MainActivity extends AppCompatActivity {
         private static final String ARG_SECTION_NUMBER = "section_number";
 
         public PlaceholderFragment() {
+
         }
 
         /**
@@ -121,9 +143,9 @@ public class MainActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
             TextView textView = rootView.findViewById(R.id.section_label);
-            textView.setText("This is photos");
 
-            FloatingActionButton fab=rootView.findViewById(R.id.fabPhoto);
+
+            FloatingActionButton fab = rootView.findViewById(R.id.fabPhoto);
             fab.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -142,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        Fragment[] fragments={
+        Fragment[] fragments = {
                 PlaceholderFragment.newInstance(1),
                 AlbumFragment.newInstance(MainActivity.this)
         };

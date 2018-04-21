@@ -17,6 +17,9 @@ import com.example.thaib.testtab.R;
 import com.example.thaib.testtab.Utils.FileUtils;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 
 /**
@@ -132,6 +135,7 @@ public class AlbumAdapter extends ArrayAdapter {
         }
         LinkedList<File> oImgs = oAlbum.getImages();
         File newFolder = nAlbum.getFile();
+
         for (File img : oImgs) {
             File to = new File(newFolder, img.getName());
             boolean res = img.renameTo(to);
@@ -152,5 +156,25 @@ public class AlbumAdapter extends ArrayAdapter {
 
     public LinkedList<Album> getAlbums() {
         return albums;
+    }
+
+    public void sortAlbum(final SortType type) {
+        Collections.sort(albums, new Comparator<Album>() {
+            @Override
+            public int compare(Album o1, Album o2) {
+                switch (type) {
+                    case NAME_A_Z:
+                        return o1.getName().compareTo(o2.getName());
+                    case NAME_Z_A:
+                        return o2.getName().compareTo(o1.getName());
+                    case ITEMS_INC:
+                        return o1.getSize() - o2.getSize();
+                    case ITEMS_DESC:
+                        return o2.getSize() - o1.getSize();
+                }
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+        this.notifyDataSetChanged();
     }
 }
